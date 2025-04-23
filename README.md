@@ -1,6 +1,6 @@
 # Whisper Cloud CLI
 
-A command-line tool to transcribe audio files using OpenAI's Whisper model via the Groq API.
+A command-line tool to transcribe audio and video files using OpenAI's Whisper model via the Groq API.
 
 ## Author
 
@@ -9,12 +9,14 @@ Website: [AbdullahAdeeb.xyz](https://AbdullahAdeeb.xyz)
 
 ## Description
 
-Whisper Cloud CLI is a command-line tool that allows you to transcribe audio files using OpenAI's Whisper model hosted on Groq's platform. The tool supports various audio formats and can generate transcripts in multiple formats including plain text, SRT, VTT, and TSV.
+Whisper Cloud CLI is a command-line tool that allows you to transcribe audio and video files using OpenAI's Whisper model hosted on Groq's platform. The tool supports various audio and video formats and can generate transcripts in multiple formats including plain text, SRT, VTT, and TSV.
 
 ## Features
 
-- Transcribe audio files using Whisper Large v3 Turbo model
-- Support for various audio formats (MP3, WAV, M4A, MP4, WEBM, OGG, FLAC)
+- Transcribe audio and video files using Whisper Large v3 Turbo model
+- Automatic conversion of video to audio
+- Support for various audio formats (MP3, WAV, M4A, WEBM, OGG, FLAC)
+- Support for various video formats (MP4, AVI, MOV, MKV, WEBM, FLV, WMV, MPEG)
 - Generate transcripts in multiple formats (TXT, JSON, SRT, VTT, TSV)
 - Automatically copy transcript to clipboard
 - Customizable output directory
@@ -26,6 +28,26 @@ Whisper Cloud CLI is a command-line tool that allows you to transcribe audio fil
 
 - Python 3.6+
 - Groq API key
+- FFmpeg (required for video file support)
+
+### Install FFmpeg
+
+#### Windows
+Download and install FFmpeg from [here](https://ffmpeg.org/download.html) or use:
+```bash
+winget install FFmpeg
+```
+
+#### macOS
+```bash
+brew install ffmpeg
+```
+
+#### Linux (Ubuntu/Debian)
+```bash
+sudo apt update
+sudo apt install ffmpeg
+```
 
 ### Install from source
 
@@ -52,7 +74,7 @@ export GROQ_API_KEY=your_groq_api_key_here
 ## Usage
 
 ```bash
-python whisper_cloud.py audio_file.mp3 [options]
+python whisper_cloud.py audio_or_video_file [options]
 ```
 
 ### Options
@@ -71,6 +93,11 @@ Basic transcription:
 python whisper_cloud.py recording.mp3
 ```
 
+Transcribe a video file:
+```bash
+python whisper_cloud.py lecture.mp4
+```
+
 Translate audio to English:
 ```bash
 python whisper_cloud.py interview.mp3 --task translate
@@ -83,12 +110,12 @@ python whisper_cloud.py lecture.mp3 --language en
 
 Transcribe multiple files:
 ```bash
-python whisper_cloud.py file1.mp3 file2.wav file3.m4a
+python whisper_cloud.py file1.mp3 file2.wav video1.mp4
 ```
 
 ## Output Files
 
-For each transcribed audio file, the following files are generated in the output directory:
+For each transcribed file, the following are generated in the output directory:
 
 - `transcript.txt`: Plain text transcript
 - `transcript.json`: JSON with detailed information
@@ -103,4 +130,5 @@ MIT
 ## Acknowledgements
 - [Abdullah Adeeb](https://www.abdullahadeeb.xyz)
 - [OpenAI Whisper](https://github.com/openai/whisper)
-- [Groq API](https://console.groq.com/docs/introduction) 
+- [Groq API](https://console.groq.com/docs/introduction)
+- [FFmpeg](https://ffmpeg.org/) 

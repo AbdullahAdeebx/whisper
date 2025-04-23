@@ -7,6 +7,10 @@ import sys
 import json
 import requests
 import pyperclip
+import tempfile
+import subprocess
+import time
+import gc
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -61,29 +65,375 @@ def get_file_mimetype(file_path):
     """Determine the MIME type based on file extension"""
     extension = Path(file_path).suffix.lower()
     mime_types = {
+        # Audio formats
         '.mp3': 'audio/mpeg',
         '.wav': 'audio/wav',
         '.m4a': 'audio/m4a',
-        '.mp4': 'video/mp4',
-        '.mpeg': 'video/mpeg',
         '.mpga': 'audio/mpeg',
-        '.webm': 'video/webm',
         '.ogg': 'audio/ogg',
         '.oga': 'audio/ogg',
-        '.flac': 'audio/flac'
+        '.flac': 'audio/flac',
+        '.aac': 'audio/aac',
+        '.wma': 'audio/x-ms-wma',
+        
+        # Video formats
+        '.mp4': 'video/mp4',
+        '.mpeg': 'video/mpeg',
+        '.mpg': 'video/mpeg',
+        '.webm': 'video/webm',
+        '.avi': 'video/x-msvideo',
+        '.mov': 'video/quicktime',
+        '.wmv': 'video/x-ms-wmv',
+        '.flv': 'video/x-flv',
+        '.mkv': 'video/x-matroska',
+        '.ts': 'video/mp2t',
+        '.3gp': 'video/3gpp'
     }
-    return mime_types.get(extension, 'audio/mpeg')  # Default to audio/mpeg if unknown
+    
+    # Default to audio/mpeg if unknown for transcription services
+    if extension not in mime_types:
+        print(f"Warning: Unknown file extension '{extension}'. Using default MIME type.")
+    
+    return mime_types.get(extension, 'audio/mpeg')
+
+def is_video_file(file_path):
+    """Check if the file is a video based on its extension"""
+    video_extensions = [
+        '.mp4', '.avi', '.mov', '.mkv', '.webm', '.flv', 
+        '.wmv', '.mpeg', '.mpg', '.m4v', '.3gp', '.ts'
+    ]
+    
+    extension = Path(file_path).suffix.lower()
+    is_video = extension in video_extensions
+    
+    # If we have ffprobe available, use it to more accurately detect video files
+    try:
+        # Try to get file info using ffprobe
+        result = subprocess.run(
+            [
+                'ffprobe', 
+                '-v', 'error', 
+                '-select_streams', 'v:0', 
+                '-show_entries', 'stream=codec_type', 
+                '-of', 'csv=p=0', 
+                file_path
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=10
+        )
+        
+        # If ffprobe detects a video stream, it will output "video"
+        if "video" in result.stdout.strip().lower():
+            return True
+        
+    except (subprocess.SubprocessError, FileNotFoundError):
+        # If ffprobe fails or isn't installed, fall back to extension check
+        pass
+    
+    return is_video
+
+def convert_video_to_audio(video_path):
+    """Convert video to audio using ffmpeg and return the path to the temporary audio file"""
+    print(f"Detected video file: {video_path}. Converting to audio...")
+    print("This may take a few moments depending on the file size...")
+    
+    # Create a temporary file with .mp3 extension
+    temp_file = tempfile.NamedTemporaryFile(suffix='.mp3', delete=False)
+    temp_file.close()
+    temp_audio_path = temp_file.name
+    
+    try:
+        # Use ffmpeg to convert video to audio, with progress output
+        command = [
+            'ffmpeg',
+            '-y',  # Overwrite output files without asking
+            '-i', video_path,
+            '-vn',  # No video
+            '-acodec', 'libmp3lame',  # Use MP3 codec
+            '-q:a', '4',  # Quality setting
+            '-hide_banner',  # Hide ffmpeg compilation details
+            '-loglevel', 'warning',  # Show only warnings and errors
+            temp_audio_path
+        ]
+        
+        # Check if ffmpeg is available
+        try:
+            subprocess.run(['ffmpeg', '-version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=5)
+        except (subprocess.SubprocessError, FileNotFoundError):
+            print("Error: FFmpeg is not installed or not available in PATH")
+            print("Please install FFmpeg: https://ffmpeg.org/download.html")
+            return None
+        
+        # Run the ffmpeg command with a timeout
+        print("Converting video to audio (this might take a while for large files)...")
+        process = subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=300,  # 5 minute timeout
+            check=False  # Don't raise exception on non-zero exit
+        )
+        
+        # Check if the conversion was successful
+        if process.returncode != 0:
+            print(f"Error converting video to audio. FFmpeg return code: {process.returncode}")
+            print(f"Error message: {process.stderr}")
+            
+            # Clean up the temporary file
+            safely_remove_temp_file(temp_audio_path)
+            
+            # Try an alternative command with different settings
+            print("Trying alternative conversion method...")
+            alt_command = [
+                'ffmpeg',
+                '-y',
+                '-i', video_path,
+                '-vn',
+                '-ar', '44100',  # Audio sample rate
+                '-ac', '2',  # Audio channels (stereo)
+                '-b:a', '192k',  # Audio bitrate
+                temp_audio_path
+            ]
+            
+            try:
+                alt_process = subprocess.run(
+                    alt_command,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    timeout=300,
+                    check=False
+                )
+                
+                if alt_process.returncode != 0:
+                    print(f"Alternative conversion also failed: {alt_process.stderr}")
+                    safely_remove_temp_file(temp_audio_path)
+                    return None
+            except Exception as e:
+                print(f"Alternative conversion also failed: {e}")
+                safely_remove_temp_file(temp_audio_path)
+                return None
+        
+        # Check if the audio file was created and has content
+        if not os.path.exists(temp_audio_path) or os.path.getsize(temp_audio_path) == 0:
+            print("Error: FFmpeg did not produce an output file or the file is empty")
+            safely_remove_temp_file(temp_audio_path)
+            return None
+            
+        print(f"Successfully converted video to audio: {temp_audio_path}")
+        return temp_audio_path
+    
+    except subprocess.TimeoutExpired:
+        print("Error: FFmpeg process timed out after 5 minutes")
+        print("The video file may be too large or in an unsupported format")
+        
+        # Clean up the temporary file if there was an error
+        safely_remove_temp_file(temp_audio_path)
+        
+        return None
+    except subprocess.CalledProcessError as e:
+        print(f"Error converting video to audio: {e}")
+        print(f"FFMPEG Error output: {e.stderr}")
+        
+        # Clean up the temporary file if there was an error
+        safely_remove_temp_file(temp_audio_path)
+        
+        return None
+    except Exception as e:
+        print(f"An unexpected error occurred during conversion: {e}")
+        
+        # Clean up the temporary file if there was an error
+        safely_remove_temp_file(temp_audio_path)
+        
+        return None
+
+def extract_audio_direct(video_path):
+    """
+    Directly extract audio from video without re-encoding.
+    This is faster but may not work with all video formats.
+    """
+    print("Attempting direct audio extraction (faster method)...")
+    
+    # Create a temporary file with .aac extension (common audio format in videos)
+    temp_file = tempfile.NamedTemporaryFile(suffix='.aac', delete=False)
+    temp_file.close()
+    temp_audio_path = temp_file.name
+    
+    try:
+        # Extract audio stream without re-encoding
+        command = [
+            'ffmpeg',
+            '-y',
+            '-i', video_path,
+            '-vn',  # No video
+            '-acodec', 'copy',  # Copy audio without re-encoding
+            '-hide_banner',
+            '-loglevel', 'warning',
+            temp_audio_path
+        ]
+        
+        process = subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=60,  # Shorter timeout as this should be quick
+            check=False
+        )
+        
+        if process.returncode != 0:
+            print("Direct extraction failed, will try conversion instead.")
+            safely_remove_temp_file(temp_audio_path)
+            return None
+            
+        # Check if the audio file was created and has content
+        if not os.path.exists(temp_audio_path) or os.path.getsize(temp_audio_path) == 0:
+            print("Direct extraction produced empty file, will try conversion instead.")
+            safely_remove_temp_file(temp_audio_path)
+            return None
+            
+        print(f"Successfully extracted audio: {temp_audio_path}")
+        return temp_audio_path
+        
+    except Exception as e:
+        print(f"Direct extraction error: {e}")
+        safely_remove_temp_file(temp_audio_path)
+        return None
+
+def normalize_path(path):
+    """Normalize file path to handle spaces and special characters."""
+    # Convert to absolute path
+    abs_path = os.path.abspath(path)
+    
+    # Handle Windows paths correctly
+    if os.name == 'nt':
+        # Remove any surrounding quotes already present
+        abs_path = abs_path.strip('"\'')
+        
+    return abs_path
+
+def process_webm_file(video_path):
+    """Special processing for webm files which can be problematic"""
+    print("Detected WebM file - attempting specialized processing...")
+    
+    # Create a temporary file with .mp3 extension
+    temp_file = tempfile.NamedTemporaryFile(suffix='.mp3', delete=False)
+    temp_file.close()
+    temp_audio_path = temp_file.name
+    wav_audio_path = temp_audio_path.replace('.mp3', '.wav')
+    
+    try:
+        # Try a different approach specifically for WebM files
+        command = [
+            'ffmpeg',
+            '-y',
+            '-i', video_path,
+            '-vn',
+            '-ab', '192k',
+            '-ar', '44100',
+            '-f', 'mp3',
+            temp_audio_path
+        ]
+        
+        process = subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=300,
+            check=False
+        )
+        
+        if process.returncode != 0:
+            print(f"WebM processing failed: {process.stderr}")
+            
+            # Try an even more aggressive approach
+            print("Trying alternative WebM processing method...")
+            alt_command = [
+                'ffmpeg',
+                '-y',
+                '-i', video_path,
+                '-acodec', 'pcm_s16le',
+                '-f', 'wav',
+                temp_audio_path.replace('.mp3', '.wav')
+            ]
+            
+            alt_process = subprocess.run(
+                alt_command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=300,
+                check=False
+            )
+            
+            if alt_process.returncode == 0:
+                # If wav worked, use the wav file instead
+                temp_audio_path = wav_audio_path
+            else:
+                print(f"Alternative WebM processing also failed: {alt_process.stderr}")
+                safely_remove_temp_file(temp_audio_path)
+                safely_remove_temp_file(wav_audio_path)
+                return None
+        
+        if not os.path.exists(temp_audio_path) or os.path.getsize(temp_audio_path) == 0:
+            if os.path.exists(wav_audio_path) and os.path.getsize(wav_audio_path) > 0:
+                temp_audio_path = wav_audio_path
+            else:
+                print("WebM processing failed to produce a valid output file")
+                safely_remove_temp_file(temp_audio_path)
+                safely_remove_temp_file(wav_audio_path)
+                return None
+        
+        print(f"Successfully processed WebM file: {temp_audio_path}")
+        return temp_audio_path
+        
+    except Exception as e:
+        print(f"WebM processing error: {e}")
+        
+        # Clean up temporary files
+        safely_remove_temp_file(temp_audio_path)
+        safely_remove_temp_file(wav_audio_path)
+            
+        return None
 
 def transcribe_audio(api_key, audio_file, model, language=None, task='transcribe', response_format='verbose_json'):
     print(f"Transcribing {audio_file}...")
+    
+    # Normalize the path to handle spaces and special characters
+    audio_file = normalize_path(audio_file)
     
     # Ensure the file exists
     if not Path(audio_file).exists():
         print(f"Error: File not found: {audio_file}")
         return None
     
+    # Check if the file is a video and convert if necessary
+    temp_audio_file = None
+    file_to_transcribe = audio_file
+    
+    if is_video_file(audio_file):
+        # Check if it's a webm file which needs special handling
+        if audio_file.lower().endswith('.webm'):
+            temp_audio_file = process_webm_file(audio_file)
+        else:
+            # First try direct extraction (faster)
+            temp_audio_file = extract_audio_direct(audio_file)
+            
+            # If that fails, try full conversion
+            if not temp_audio_file:
+                temp_audio_file = convert_video_to_audio(audio_file)
+                
+        if temp_audio_file:
+            file_to_transcribe = temp_audio_file
+        else:
+            print("All conversion methods failed. Attempting to transcribe original file...")
+    
     # Check if file is too large (Groq has a 25MB limit)
-    file_size = Path(audio_file).stat().st_size / (1024 * 1024)  # Convert to MB
+    file_size = Path(file_to_transcribe).stat().st_size / (1024 * 1024)  # Convert to MB
     if file_size > 25:
         print(f"Warning: File size ({file_size:.2f} MB) exceeds Groq's 25MB limit")
         print("The API may reject this file or fail to process it completely")
@@ -109,34 +459,76 @@ def transcribe_audio(api_key, audio_file, model, language=None, task='transcribe
         api_url = "https://api.groq.com/openai/v1/audio/translations"
     
     # Prepare the file for upload
-    mime_type = get_file_mimetype(audio_file)
+    mime_type = get_file_mimetype(file_to_transcribe)
     
-    with open(audio_file, 'rb') as f:
+    result = None
+    f = None
+    
+    try:
+        f = open(file_to_transcribe, 'rb')
         files = {
-            'file': (Path(audio_file).name, f, mime_type)
+            'file': (Path(file_to_transcribe).name, f, mime_type)
         }
         
         # Make the API request
-        try:
-            print("Sending request to Groq API...")
-            response = requests.post(api_url, headers=headers, data=data, files=files)
-            
-            if response.status_code == 200:
-                print("Transcription successful!")
-                if response_format == 'verbose_json' or response_format == 'json':
-                    return response.json()
-                else:
-                    # For text, srt, vtt formats, return as dict with text field
-                    return {"text": response.text}
+        print("Sending request to Groq API...")
+        response = requests.post(api_url, headers=headers, data=data, files=files)
+        
+        if response.status_code == 200:
+            print("Transcription successful!")
+            if response_format == 'verbose_json' or response_format == 'json':
+                result = response.json()
             else:
-                print(f"Error: API request failed with status code {response.status_code}")
-                print(f"Response: {response.text}")
-                return None
-        except requests.exceptions.RequestException as e:
-            print(f"Error during API request: {e}")
-            if 'response' in locals():
-                print(f"Response: {response.text}")
-            return None
+                # For text, srt, vtt formats, return as dict with text field
+                result = {"text": response.text}
+        else:
+            print(f"Error: API request failed with status code {response.status_code}")
+            print(f"Response: {response.text}")
+            
+    except requests.exceptions.RequestException as e:
+        print(f"Error during API request: {e}")
+        if 'response' in locals():
+            print(f"Response: {response.text}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+    finally:
+        # Make sure to close the file handle
+        if f:
+            f.close()
+        
+        # Force garbage collection to release any lingering file handles
+        gc.collect()
+        
+        # Add a small delay to ensure file handles are fully released
+        time.sleep(0.5)
+        
+        # Try to safely remove the temporary file
+        safely_remove_temp_file(temp_audio_file)
+    
+    return result
+
+def safely_remove_temp_file(file_path):
+    """Safely remove a temporary file with retries"""
+    if not file_path or not os.path.exists(file_path):
+        return
+    
+    max_attempts = 3
+    for attempt in range(max_attempts):
+        try:
+            os.unlink(file_path)
+            return
+        except PermissionError:
+            if attempt < max_attempts - 1:
+                # Wait a bit and retry
+                print(f"File still in use, waiting to retry cleanup... ({attempt+1}/{max_attempts})")
+                time.sleep(1)
+                gc.collect()  # Force garbage collection
+            else:
+                print(f"Warning: Could not remove temporary file {file_path}")
+                print("The file will remain in your temp directory")
+        except Exception as e:
+            print(f"Warning: Error removing temporary file: {e}")
+            break
 
 def format_srt(segments):
     srt_content = ""
@@ -253,6 +645,8 @@ def main():
     
     print()
     
+    temp_files = []  # Track any temporary files created
+    
     try:
         args = parse_args()
         
@@ -280,6 +674,9 @@ def main():
         api_key = get_api_key()
         
         for audio_file in args.audio_file:
+            # Normalize paths to handle spaces and quotes in filenames
+            audio_file = normalize_path(audio_file)
+            
             output_dir = create_output_directory(audio_file, args.output_dir)
             
             result = transcribe_audio(
@@ -303,12 +700,42 @@ def main():
                         copy_to_clipboard(plain_text)
                 else:
                     print("No transcript returned from API")
+            
+            # Pause briefly before next file to ensure resources are freed
+            time.sleep(1)
+            gc.collect()
     except KeyboardInterrupt:
         print("\n\nTranscription cancelled by user")
         sys.exit(0)
     except Exception as e:
         print(f"\nAn unexpected error occurred: {e}")
+        import traceback
+        traceback.print_exc()
         sys.exit(1)
+    finally:
+        # Final cleanup of any leftover temporary files in the temp directory
+        try:
+            # Look for our temporary files pattern in the temp directory
+            temp_dir = tempfile.gettempdir()
+            current_time = time.time()
+            one_hour_ago = current_time - 3600  # 1 hour in seconds
+            
+            # Find any temp files created by this script that might have been left behind
+            for temp_file in os.listdir(temp_dir):
+                try:
+                    if temp_file.startswith('tmp') and (temp_file.endswith('.mp3') or 
+                                                    temp_file.endswith('.wav') or 
+                                                    temp_file.endswith('.aac')):
+                        file_path = os.path.join(temp_dir, temp_file)
+                        # Only remove files older than 1 hour to avoid conflicts with running processes
+                        if os.path.isfile(file_path) and os.path.getmtime(file_path) < one_hour_ago:
+                            safely_remove_temp_file(file_path)
+                except Exception:
+                    # Ignore errors in cleanup - it's just a best effort
+                    pass
+        except Exception:
+            # Ignore any errors in the final cleanup
+            pass
 
 if __name__ == "__main__":
     main() 
