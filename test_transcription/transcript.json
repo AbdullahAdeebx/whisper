@@ -1,0 +1,133 @@
+{
+  "task": "transcribe",
+  "language": "English",
+  "duration": 18.33,
+  "text": " Every challenge you face is an opportunity for growth. Success isn't about perfection, it's about progress. Believe in yourself, take small steps daily, and remember that your potential is limitless. You have the strength within you to overcome obstacles and create the life you dream of.",
+  "segments": [
+    {
+      "id": 0,
+      "seek": 0,
+      "start": 0,
+      "end": 2.58,
+      "text": " Every challenge you face is an opportunity for growth.",
+      "tokens": [
+        50365,
+        2048,
+        3430,
+        291,
+        1851,
+        307,
+        364,
+        2650,
+        337,
+        4599,
+        13,
+        50494
+      ],
+      "temperature": 0,
+      "avg_logprob": -0.1245776,
+      "compression_ratio": 1.4693878,
+      "no_speech_prob": 1.0771806e-12
+    },
+    {
+      "id": 1,
+      "seek": 0,
+      "start": 3.54,
+      "end": 6.8,
+      "text": " Success isn't about perfection, it's about progress.",
+      "tokens": [
+        50542,
+        23669,
+        1943,
+        380,
+        466,
+        19708,
+        11,
+        309,
+        311,
+        466,
+        4205,
+        13,
+        50705
+      ],
+      "temperature": 0,
+      "avg_logprob": -0.1245776,
+      "compression_ratio": 1.4693878,
+      "no_speech_prob": 1.0771806e-12
+    },
+    {
+      "id": 2,
+      "seek": 0,
+      "start": 7.68,
+      "end": 12.8,
+      "text": " Believe in yourself, take small steps daily, and remember that your potential is limitless.",
+      "tokens": [
+        50749,
+        21486,
+        294,
+        1803,
+        11,
+        747,
+        1359,
+        4439,
+        5212,
+        11,
+        293,
+        1604,
+        300,
+        428,
+        3995,
+        307,
+        4948,
+        1832,
+        13,
+        51005
+      ],
+      "temperature": 0,
+      "avg_logprob": -0.1245776,
+      "compression_ratio": 1.4693878,
+      "no_speech_prob": 1.0771806e-12
+    },
+    {
+      "id": 3,
+      "seek": 0,
+      "start": 13.36,
+      "end": 17.94,
+      "text": " You have the strength within you to overcome obstacles and create the life you dream of.",
+      "tokens": [
+        51033,
+        509,
+        362,
+        264,
+        3800,
+        1951,
+        291,
+        281,
+        10473,
+        17735,
+        293,
+        1884,
+        264,
+        993,
+        291,
+        3055,
+        295,
+        13,
+        51262
+      ],
+      "temperature": 0,
+      "avg_logprob": -0.1245776,
+      "compression_ratio": 1.4693878,
+      "no_speech_prob": 1.0771806e-12
+    }
+  ],
+  "x_groq": {
+    "id": "req_01jsh2nrx0f21tcn336xjgrgxa"
+  },
+  "metadata": {
+    "transcribed_with": "Whisper Cloud CLI",
+    "author": "Abdullah Adeeb",
+    "website": "AbdullahAdeeb.xyz",
+    "version": "1.0.0"
+  }
+}
