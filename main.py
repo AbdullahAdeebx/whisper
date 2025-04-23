@@ -257,19 +257,20 @@ def extract_audio_direct(video_path):
     """
     print("Attempting direct audio extraction (faster method)...")
     
-    # Create a temporary file with .aac extension (common audio format in videos)
-    temp_file = tempfile.NamedTemporaryFile(suffix='.aac', delete=False)
+    # Create a temporary file with .mp3 extension instead of .aac to ensure Groq API compatibility
+    temp_file = tempfile.NamedTemporaryFile(suffix='.mp3', delete=False)
     temp_file.close()
     temp_audio_path = temp_file.name
     
     try:
-        # Extract audio stream without re-encoding
+        # Extract audio stream with re-encoding to MP3
         command = [
             'ffmpeg',
             '-y',
             '-i', video_path,
             '-vn',  # No video
-            '-acodec', 'copy',  # Copy audio without re-encoding
+            '-acodec', 'libmp3lame',  # Use MP3 codec instead of copying
+            '-q:a', '4',  # Quality setting
             '-hide_banner',
             '-loglevel', 'warning',
             temp_audio_path
@@ -437,6 +438,14 @@ def transcribe_audio(api_key, audio_file, model, language=None, task='transcribe
     if file_size > 25:
         print(f"Warning: File size ({file_size:.2f} MB) exceeds Groq's 25MB limit")
         print("The API may reject this file or fail to process it completely")
+    
+    # Check for unsupported file types
+    supported_extensions = ['.flac', '.mp3', '.mp4', '.mpeg', '.mpga', '.m4a', '.ogg', '.opus', '.wav', '.webm']
+    file_ext = Path(file_to_transcribe).suffix.lower()
+    if file_ext not in supported_extensions:
+        print(f"Warning: File extension '{file_ext}' may not be supported by the Groq API")
+        print(f"Supported formats are: {', '.join(supported_extensions)}")
+        print("The API may reject this file")
     
     # Prepare the API endpoint
     api_url = "https://api.groq.com/openai/v1/audio/transcriptions"
