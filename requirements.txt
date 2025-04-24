@@ -1,5 +1,4 @@
 requests>=2.25.0
 python-dotenv>=0.15.0
 pyperclip>=1.8.0
-pathlib>=1.0.1
 ffmpeg-python>=0.2.0 
