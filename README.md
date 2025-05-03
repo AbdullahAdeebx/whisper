@@ -26,46 +26,66 @@ Whisper Cloud CLI is a command-line tool that allows you to transcribe audio and
 
 ### Prerequisites
 
-- Python 3.6+
 - Groq API key
-- FFmpeg (required for video file support)
 
-### Install FFmpeg
+### Install using binaries
 
-#### Windows
-Download and install FFmpeg from [here](https://ffmpeg.org/download.html) or use:
+#### Linux
+
 ```bash
-winget install FFmpeg
+# Install FFmpeg (required for video file support)
+sudo apt update
+sudo apt install ffmpeg
+
+# Download binary
+sudo curl -L https://github.com/AbdullahAdeebx/whisper-cloud-cli/raw/main/binary/linux/whisper -o /usr/local/bin/whisper
+
+# Make it executable
+sudo chmod +x /usr/local/bin/whisper
+
+# Ensure /usr/local/bin is in PATH (usually is)
+if ! echo $PATH | grep -q "/usr/local/bin"; then
+  echo 'export PATH="/usr/local/bin:$PATH"' >> ~/.bashrc && source ~/.bashrc
+fi
 ```
 
 #### macOS
+
 ```bash
+# Install FFmpeg (required for video file support)
 brew install ffmpeg
+
+# Download binary
+sudo curl -L https://github.com/AbdullahAdeebx/whisper-cloud-cli/raw/main/binary/macos/whisper -o /usr/local/bin/whisper
+
+# Make it executable
+sudo chmod +x /usr/local/bin/whisper
+
+# Ensure it's in PATH (zsh default)
+if ! echo $PATH | grep -q "/usr/local/bin"; then
+  echo 'export PATH="/usr/local/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc
+fi
 ```
 
-#### Linux (Ubuntu/Debian)
-```bash
-sudo apt update
-sudo apt install ffmpeg
-```
+#### Windows (PowerShell)
 
-### Install from source
+```powershell
+# Install FFmpeg (required for video file support)
+winget install FFmpeg
 
-```bash
-git clone https://github.com/AbdullahAdeebx/whisper-cloud-cli.git
-cd whisper-cloud-cli
-pip install -r requirements.txt
+# Download binary
+Invoke-WebRequest -Uri https://github.com/AbdullahAdeebx/whisper-cloud-cli/raw/main/binary/windows/whisper.exe -OutFile "$env:ProgramFiles\whisper.exe"
+
+# Add to PATH permanently
+$path = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
+if ($path -notlike "*$env:ProgramFiles*") {
+    [System.Environment]::SetEnvironmentVariable("Path", "$path;$env:ProgramFiles", "Machine")
+}
 ```
 
 ## Configuration
 
-Create a `.env.local` file in the project directory with your Groq API key:
-
-```
-GROQ_API_KEY=your_groq_api_key_here
-```
-
-Alternatively, you can set it as an environment variable:
+Set Groq API key as an environment variable:
 
 ```bash
 export GROQ_API_KEY=your_groq_api_key_here
@@ -74,7 +94,7 @@ export GROQ_API_KEY=your_groq_api_key_here
 ## Usage
 
 ```bash
-python whisper_cloud.py audio_or_video_file [options]
+whisper audio_or_video_file [options]
 ```
 
 ### Options
@@ -90,27 +110,27 @@ python whisper_cloud.py audio_or_video_file [options]
 
 Basic transcription:
 ```bash
-python whisper_cloud.py recording.mp3
+whisper recording.mp3
 ```
 
 Transcribe a video file:
 ```bash
-python whisper_cloud.py lecture.mp4
+whisper lecture.mp4
 ```
 
 Translate audio to English:
 ```bash
-python whisper_cloud.py interview.mp3 --task translate
+whisper interview.mp3 --task translate
 ```
 
 Specify language for better accuracy:
 ```bash
-python whisper_cloud.py lecture.mp3 --language en
+whisper lecture.mp3 --language en
 ```
 
 Transcribe multiple files:
 ```bash
-python whisper_cloud.py file1.mp3 file2.wav video1.mp4
+whisper file1.mp3 file2.wav video1.mp4
 ```
 
 ## Output Files
@@ -131,4 +151,4 @@ MIT
 - [Abdullah Adeeb](https://www.abdullahadeeb.xyz)
 - [OpenAI Whisper](https://github.com/openai/whisper)
 - [Groq API](https://console.groq.com/docs/introduction)
-- [FFmpeg](https://ffmpeg.org/) 
+- [FFmpeg](https://ffmpeg.org/)
