@@ -4,31 +4,31 @@ A command-line tool to transcribe audio and video files using OpenAI's Whisper m
 
 ## Author
 
-**Abdullah Adeeb**  
+**Abdullah Adeeb**
 Website: [AbdullahAdeeb.xyz](https://AbdullahAdeeb.xyz)
 
 ## Description
 
-Whisper is a command-line tool that allows you to transcribe audio and video files using OpenAI's Whisper model hosted on Groq's platform. The tool supports various audio and video formats and can generate transcripts in multiple formats including plain text, SRT, VTT, and TSV.
+Whisper is a lightweight CLI tool that transcribes audio and video files using OpenAI's Whisper model hosted on Groq's ultra-fast inference platform. It supports a wide range of media formats and can generate transcripts in multiple file types such as plain text, SRT, VTT, and TSV.
 
 ## Features
 
-- Transcribe audio and video files using Whisper Large v3 Turbo model
-- Automatic conversion of video to audio
-- Support for various audio formats (MP3, WAV, M4A, WEBM, OGG, FLAC)
-- Support for various video formats (MP4, AVI, MOV, MKV, WEBM, FLV, WMV, MPEG)
-- Generate transcripts in multiple formats (TXT, JSON, SRT, VTT, TSV)
-- Automatically copy transcript to clipboard
-- Customizable output directory
-- Support for both transcription and translation tasks
+* Transcribe audio and video files using the Whisper Large v3 Turbo model
+* Automatic extraction of audio from video files
+* Support for popular audio formats: MP3, WAV, M4A, WEBM, OGG, FLAC
+* Support for common video formats: MP4, AVI, MOV, MKV, WEBM, FLV, WMV, MPEG
+* Output transcripts in TXT, JSON, SRT, VTT, and TSV
+* Optionally copy transcript to clipboard
+* Custom output directory support
+* Transcription and translation tasks supported
 
 ## Installation
 
 ### Prerequisites
 
-- Groq API key
+* Groq API key
 
-### Install using binaries
+### Install using prebuilt binaries
 
 #### Linux
 
@@ -43,7 +43,7 @@ sudo curl -L https://github.com/AbdullahAdeebx/whisper-cloud-cli/raw/main/binary
 # Make it executable
 sudo chmod +x /usr/local/bin/whisper
 
-# Ensure /usr/local/bin is in PATH (usually is)
+# Ensure /usr/local/bin is in PATH
 if ! echo $PATH | grep -q "/usr/local/bin"; then
   echo 'export PATH="/usr/local/bin:$PATH"' >> ~/.bashrc && source ~/.bashrc
 fi
@@ -83,9 +83,30 @@ if ($path -notlike "*$env:ProgramFiles*") {
 }
 ```
 
+### Build from source (if binaries didn’t work for you)
+
+```bash
+# Clone the repo
+git clone https://github.com/AbdullahAdeebx/whisper-cloud-cli.git
+cd whisper-cloud-cli
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Optional: Make the script executable globally with pyinstaller
+pip install pyinstaller
+pyinstaller whisper.py --onefile --name whisper
+
+# Move the binary to a location in your PATH
+mv dist/whisper /usr/local/bin/
+chmod +x /usr/local/bin/whisper
+```
+
+> On Windows, this will produce `dist/whisper.exe`, which you can move anywhere and add to your PATH.
+
 ## Configuration
 
-Set Groq API key as an environment variable:
+Set your Groq API key as an environment variable:
 
 ```bash
 export GROQ_API_KEY=your_groq_api_key_here
@@ -99,56 +120,62 @@ whisper audio_or_video_file [options]
 
 ### Options
 
-- `--model`: Whisper model to use (default: whisper-large-v3-turbo)
-- `--language`: Language code (optional)
-- `--task`: Task to perform: 'transcribe' or 'translate' (default: transcribe)
-- `--output-dir`: Output directory (default: audio_filename_transcription)
-- `--response-format`: API response format: 'verbose_json', 'json', 'text', 'srt', 'vtt' (default: verbose_json)
-- `--version`: Show version information and exit
+* `--model`: Whisper model to use (default: whisper-large-v3-turbo)
+* `--language`: Language code (optional)
+* `--task`: Task to perform: 'transcribe' or 'translate' (default: transcribe)
+* `--output-dir`: Output directory (default: audio\_filename\_transcription)
+* `--response-format`: API response format: 'verbose\_json', 'json', 'text', 'srt', 'vtt' (default: verbose\_json)
+* `--version`: Show version information and exit
 
 ### Examples
 
 Basic transcription:
+
 ```bash
 whisper recording.mp3
 ```
 
 Transcribe a video file:
+
 ```bash
 whisper lecture.mp4
 ```
 
 Translate audio to English:
+
 ```bash
 whisper interview.mp3 --task translate
 ```
 
 Specify language for better accuracy:
+
 ```bash
 whisper lecture.mp3 --language en
 ```
 
 Transcribe multiple files:
+
 ```bash
 whisper file1.mp3 file2.wav video1.mp4
 ```
 
 ## Output Files
 
-For each transcribed file, the following are generated in the output directory:
+Each transcription will create a folder with:
 
-- `transcript.txt`: Plain text transcript
-- `transcript.json`: JSON with detailed information
-- `transcript.srt`: SubRip subtitle format
-- `transcript.vtt`: WebVTT subtitle format
-- `transcript.tsv`: Tab-separated values with timestamps
+* `transcript.txt`: Plain text
+* `transcript.json`: JSON with detailed metadata
+* `transcript.srt`: SubRip subtitles
+* `transcript.vtt`: WebVTT format
+* `transcript.tsv`: Tab-separated timestamps and text
 
 ## License
 
 MIT
 
 ## Acknowledgements
-- [Abdullah Adeeb](https://www.abdullahadeeb.xyz)
-- [OpenAI Whisper](https://github.com/openai/whisper)
-- [Groq API](https://console.groq.com/docs/introduction)
-- [FFmpeg](https://ffmpeg.org/)
+
+* [Abdullah Adeeb](https://www.abdullahadeeb.xyz)
+* [OpenAI Whisper](https://github.com/openai/whisper)
+* [Groq API](https://console.groq.com/docs/introduction)
+* [FFmpeg](https://ffmpeg.org/)
