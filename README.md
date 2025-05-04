@@ -95,7 +95,7 @@ pip install -r requirements.txt
 
 # Optional: Make the script executable globally with pyinstaller
 pip install pyinstaller
-pyinstaller whisper.py --onefile --name whisper
+pyinstaller main.py --onefile --name whisper
 
 # Move the binary to a location in your PATH
 mv dist/whisper /usr/local/bin/
