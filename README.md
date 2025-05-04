@@ -126,8 +126,18 @@ $src = "$PWD\dist\whisper.exe"; $destDir = "C:\Program Files\Whisper"; New-Item 
 
 Set your Groq API key as an environment variable:
 
+### Linux
 ```bash
-export GROQ_API_KEY=your_groq_api_key_here
+echo 'export GROQ_API_KEY="your_groq_api_key_here"' >> ~/.bashrc && source ~/.bashrc
+```
+
+### macOS
+```bash
+echo 'export GROQ_API_KEY="your_groq_api_key_here"' >> ~/.zshrc && source ~/.zshrc
+```
+### Windows
+```bash
+[System.Environment]::SetEnvironmentVariable("GROQ_API_KEY", "your_groq_api_key_here", "User")
 ```
 
 ## Usage
