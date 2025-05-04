@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Whisper Cloud CLI - Transcribe audio files using Groq-hosted Whisper
+# Whisper - Transcribe audio files using Groq-hosted Whisper
 # Author: Abdullah Adeeb (AbdullahAdeeb.xyz)
 import argparse
 import os

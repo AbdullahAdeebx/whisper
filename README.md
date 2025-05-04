@@ -1,4 +1,4 @@
-# Whisper Cloud CLI
+# Whisper
 
 A command-line tool to transcribe audio and video files using OpenAI's Whisper model via the Groq API.
 
@@ -9,7 +9,7 @@ Website: [AbdullahAdeeb.xyz](https://AbdullahAdeeb.xyz)
 
 ## Description
 
-Whisper Cloud CLI is a command-line tool that allows you to transcribe audio and video files using OpenAI's Whisper model hosted on Groq's platform. The tool supports various audio and video formats and can generate transcripts in multiple formats including plain text, SRT, VTT, and TSV.
+Whisper is a command-line tool that allows you to transcribe audio and video files using OpenAI's Whisper model hosted on Groq's platform. The tool supports various audio and video formats and can generate transcripts in multiple formats including plain text, SRT, VTT, and TSV.
 
 ## Features
 
