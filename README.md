@@ -100,7 +100,7 @@ pip install pyinstaller
 pyinstaller main.py --onefile --name whisper
 
 # Move the binary to a location in your PATH
-mv dist/whisper /usr/local/bin/whisper/
+sudo mv dist/whisper /usr/local/bin/whisper
 chmod +x /usr/local/bin/whisper/whisper
 ```
 
