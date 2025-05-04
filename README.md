@@ -85,6 +85,8 @@ if ($path -notlike "*$env:ProgramFiles*") {
 
 ### Build from source (if binaries didn’t work for you)
 
+#### Linux & macOS
+
 ```bash
 # Clone the repo
 git clone https://github.com/AbdullahAdeebx/whisper-cloud-cli.git
@@ -98,11 +100,27 @@ pip install pyinstaller
 pyinstaller main.py --onefile --name whisper
 
 # Move the binary to a location in your PATH
-mv dist/whisper /usr/local/bin/
-chmod +x /usr/local/bin/whisper
+mv dist/whisper /usr/local/bin/whisper/
+chmod +x /usr/local/bin/whisper/whisper
 ```
 
-> On Windows, this will produce `dist/whisper.exe`, which you can move anywhere and add to your PATH.
+#### Windows (powershell)
+
+```bash
+# Clone the repo
+git clone https://github.com/AbdullahAdeebx/whisper-cloud-cli.git
+cd whisper-cloud-cli
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Optional: Make the script executable globally with pyinstaller
+pip install pyinstaller
+pyinstaller main.py --onefile --name whisper
+
+# Move the binary to a location in your PATH
+$src = "$PWD\dist\whisper.exe"; $destDir = "C:\Program Files\Whisper"; New-Item -ItemType Directory -Force -Path $destDir | Out-Null; Copy-Item $src -Destination "$destDir\whisper.exe" -Force; $envPath = [System.Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::Machine); if ($envPath -notlike "*$destDir*") { [System.Environment]::SetEnvironmentVariable("Path", "$envPath;$destDir", [System.EnvironmentVariableTarget]::Machine); Write-Output "✅ whisper.exe moved & PATH updated. Restart terminal." } else { Write-Output "ℹ️ whisper.exe moved. PATH already includes it." }
+```
 
 ## Configuration
 
