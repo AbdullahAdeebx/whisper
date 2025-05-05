@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Whisper - Transcribe audio files using Groq-hosted Whisper
+# whisper - transcribe audio from terminal.
 # Author: Abdullah Adeeb (AbdullahAdeeb.xyz)
 import argparse
 import os
@@ -19,7 +19,7 @@ __author__ = "Abdullah Adeeb"
 __website__ = "AbdullahAdeeb.xyz"
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='whisper - Transcribe audio files using Groq-hosted Whisper')
+    parser = argparse.ArgumentParser(description='whisper - transcribe audio from terminal.')
     parser.add_argument('audio_file', nargs='*', help='Path to audio file(s) to transcribe')
     parser.add_argument('--model', default='whisper-large-v3-turbo', help='Whisper model to use')
     parser.add_argument('--language', help='Language code (optional)')
@@ -636,7 +636,7 @@ def copy_to_clipboard(text):
 
 def main():
     # Print a welcome message
-    print("\n🎤 whisper - Transcribe audio using Groq API")
+    print("\n🎤 whisper - transcribe audio from terminal.")
     print("====================================================")
     
     # Different terminal types support different link formats
