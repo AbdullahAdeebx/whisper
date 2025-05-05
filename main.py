@@ -19,7 +19,7 @@ __author__ = "Abdullah Adeeb"
 __website__ = "AbdullahAdeeb.xyz"
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Whisper Cloud CLI - Transcribe audio files using Groq-hosted Whisper')
+    parser = argparse.ArgumentParser(description='whisper - Transcribe audio files using Groq-hosted Whisper')
     parser.add_argument('audio_file', nargs='*', help='Path to audio file(s) to transcribe')
     parser.add_argument('--model', default='whisper-large-v3-turbo', help='Whisper model to use')
     parser.add_argument('--language', help='Language code (optional)')
@@ -581,7 +581,7 @@ def save_transcription_files(result, output_dir):
         return
     
     plain_text = result["text"]
-    attribution = f"\n\n---\nTranscribed with Whisper Cloud CLI by {__author__} | {__website__}"
+    attribution = f"\n\n---\nTranscribed with whisper by {__author__} | {__website__}"
     
     # Save plain text
     txt_path = output_dir / "transcript.txt"
@@ -593,7 +593,7 @@ def save_transcription_files(result, output_dir):
     json_path = output_dir / "transcript.json"
     # Add attribution metadata to the JSON
     result["metadata"] = {
-        "transcribed_with": "Whisper Cloud CLI",
+        "transcribed_with": "whisper",
         "author": __author__,
         "website": __website__,
         "version": __version__
@@ -636,7 +636,7 @@ def copy_to_clipboard(text):
 
 def main():
     # Print a welcome message
-    print("\n🎤 Whisper Cloud CLI - Transcribe audio using Groq API")
+    print("\n🎤 whisper - Transcribe audio using Groq API")
     print("====================================================")
     
     # Different terminal types support different link formats
