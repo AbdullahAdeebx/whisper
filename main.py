@@ -586,7 +586,7 @@ def save_transcription_files(result, output_dir):
     # Save plain text
     txt_path = output_dir / "transcript.txt"
     with open(txt_path, "w", encoding="utf-8") as f:
-        f.write(plain_text + attribution)
+        f.write(plain_text)
     print(f"✓ Saved text transcript: {txt_path}")
     
     # Save JSON
