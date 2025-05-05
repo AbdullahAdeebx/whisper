@@ -1,32 +1,23 @@
-# Whisper
+# whisper
+a cli tool i made for myself.
 
-A command-line tool to transcribe audio and video files using OpenAI's Whisper model via the Groq API.
+one simple way to transcribe audio from terminal.
 
-## Author
+all in native python.  
+no subscription.  
+blazingly fast. free. enjoy.
 
-**Abdullah Adeeb**
-Website: [AbdullahAdeeb.xyz](https://AbdullahAdeeb.xyz)
-
-## Description
-
-Whisper is a lightweight CLI tool that transcribes audio and video files using OpenAI's Whisper model hosted on Groq's ultra-fast inference platform. It supports a wide range of media formats and can generate transcripts in multiple file types such as plain text, SRT, VTT, and TSV.
+![img](./assets/introducing-whisper.gif)
 
 ## Features
 
-* Transcribe audio and video files using the Whisper Large v3 Turbo model
-* Automatic extraction of audio from video files
-* Support for popular audio formats: MP3, WAV, M4A, WEBM, OGG, FLAC
-* Support for common video formats: MP4, AVI, MOV, MKV, WEBM, FLV, WMV, MPEG
-* Output transcripts in TXT, JSON, SRT, VTT, and TSV
-* Optionally copy transcript to clipboard
-* Custom output directory support
-* Transcription and translation tasks supported
+*   **Supports Many Formats:** Handles popular audio (MP3, WAV, M4A, etc.) and video (MP4, AVI, MOV, etc.) files.
+*   **Automatic Audio Extraction:** Extracts audio from video files automatically.
+*   **Multiple Output Formats:** Generates transcripts in TXT, JSON, SRT, VTT, and TSV formats.
+
+
 
 ## Installation
-
-### Prerequisites
-
-* Groq API key
 
 ### Install using prebuilt binaries
 
@@ -104,7 +95,7 @@ sudo mv dist/whisper /usr/local/bin/whisper
 chmod +x /usr/local/bin/whisper/whisper
 ```
 
-#### Windows (powershell)
+#### Windows (Powershell)
 
 ```bash
 # Clone the repo
@@ -124,7 +115,9 @@ $src = "$PWD\dist\whisper.exe"; $destDir = "C:\Program Files\Whisper"; New-Item 
 
 ## Configuration
 
-Set your Groq API key as an environment variable:
+Set your Groq API key as an environment variable.   
+You can get a free API key from [Groq](https://groq.com).
+
 
 ### Linux
 ```bash
