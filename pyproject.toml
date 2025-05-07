@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "aa-whisper"
 version = "0.1.0"
-description = "A simple pip template by Abdullah Adeeb"
+description = "whisper - transcribe audio from terminal by Abdullah Adeeb"
 readme.content-type = "text/markdown"
 readme.file = "README.md"
 requires-python = ">=3.7"
