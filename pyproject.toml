@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aa-whisper"
+version = "0.1.0"
+description = "A simple pip template by Abdullah Adeeb"
+readme.content-type = "text/markdown"
+readme.file = "README.md"
+requires-python = ">=3.7"
+license = "MIT"
+authors = [
+    { name = "Abdullah Adeeb", email = "abdullah@abdullahadeeb.xyz" },
+]
+keywords = ["pip", "template", "cli"]
+
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: OS Independent",
+    "Topic :: Utilities",
+]
+
+dependencies = [
+    "requests>=2.25.0",
+    "python-dotenv>=0.15.0",
+    "pyperclip>=1.8.0",
+    "ffmpeg-python>=0.2.0"
+]
+
+[project.scripts]
+whisper = "whisper.main:main"
+
+[project.urls]
+"Repository" = "https://github.com/abdullahadeebx/whisper"
+"Bug Tracker" = "https://github.com/abdullahadeebx/whisper/issues"
+"Homepage" = "https://www.abdullahadeeb.xyz"
+
+[tool.setuptools]
+packages = ["whisper"]
